@@ -1,6 +1,6 @@
 # Progetto Advanced Programming Languages (APL)
 
-Piattaforma per la **visualizzazione step-by-step** e l'**benchmarking** di algoritmi di ordinamento, ricerca e cammini minimi su grafi, con tracciamento visivo della memoria tra **Stack** ed **Heap** e supporto a diverse strutture dati (**Array contiguo su Heap** e **Doubly Linked List** `std::list`).
+Piattaforma per la **visualizzazione step-by-step** e l'**benchmarking** di algoritmi di ordinamento, ricerca e cammini minimi su grafi, con tracciamento visivo della memoria tra **Stack** ed **Heap** e supporto a diverse strutture dati (**Array contiguo su Heap** e **Linked List**).
 
 ---
 
@@ -8,9 +8,9 @@ Piattaforma per la **visualizzazione step-by-step** e l'**benchmarking** di algo
 
 | Livello | Linguaggio / Tecnologie | Ruolo e Responsabilità |
 | :--- | :--- | :--- |
-| **Frontend (GUI)** | **Python 3.11+**<br>PyQt6, Matplotlib, NetworkX, Requests | Interfaccia grafica utente, visualizzatore dinamico di step e grafi, pannello memoria Stack/Heap, configuratore ed esecutore di benchmark con boxplot e curve $O(N)$. |
+| **Frontend** | **Python 3.11+**<br>PyQt6, Matplotlib, NetworkX, Requests | Interfaccia grafica utente, visualizzatore dinamico di step e grafi, pannello memoria Stack/Heap, configuratore ed esecutore di benchmark con boxplot e curve $O(N)$. |
 | **Middleware** | **Go 1.21+**<br>`net/http`, Goroutines, Channels, `sync` | Server HTTP REST locale, gestione del **Worker Pool concorrente** per accodamento ed esecuzione isolata dei task, monitoraggio e supervisione dei sottoprocessi C++. |
-| **Backend (Core)** | **C++20**<br>STL (`std::vector`, `std::list`, `std::chrono`), nlohmann/json | Esecuzione degli algoritmi, campionamento statistico multi-run con seed indipendenti, memory tracking di stack frame e blocchi heap, I/O JSON su standard stream. |
+| **Backend** | **C++20**<br>STL (`std::vector`, `std::list`, `std::chrono`), nlohmann/json | Esecuzione degli algoritmi, campionamento statistico multi-run con seed indipendenti, memory tracking di stack frame e blocchi heap, I/O JSON su standard stream. |
 
 ---
 
