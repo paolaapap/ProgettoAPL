@@ -1,0 +1,17 @@
+[project]
+name = "apl-frontend"
+version = "0.1.0"
+description = "Frontend GUI PyQt6 per visualizzazione algoritmi e benchmarking APL"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "PyQt6>=6.5.0",
+    "matplotlib>=3.7.0",
+    "requests>=2.31.0",
+    "networkx>=3.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+

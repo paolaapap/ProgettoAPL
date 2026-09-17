@@ -1,0 +1,11 @@
+name: apl-frontend
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.11
+  - pyqt>=6.5.0
+  - matplotlib>=3.7.0
+  - requests>=2.31.0
+  - networkx>=3.0
+

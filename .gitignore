@@ -1,0 +1,10 @@
+.vscode/
+backend/build/
+__pycache__/
+*.pyc
+*.exe
+*.png
+.DS_Store
+chat.md
+chat.html
+percorso_studio.md
