@@ -1,148 +1,140 @@
 # Progetto Advanced Programming Languages (APL)
 
-Piattaforma per la **visualizzazione step-by-step** e l'**benchmarking** di algoritmi di ordinamento, ricerca e cammini minimi su grafi, con tracciamento visivo della memoria tra **Stack** ed **Heap** e supporto a diverse strutture dati (**Array contiguo su Heap** e **Linked List**).
+Piattaforma per la **visualizzazione step-by-step** e il **benchmarking** di algoritmi di ordinamento, ricerca e cammini minimi su grafi, con tracciamento visivo della memoria tra **Stack** ed **Heap** e supporto a diverse strutture dati.
 
 ---
 
-## Architettura 
+## Architettura
 
-| Livello | Linguaggio / Tecnologie | Ruolo e Responsabilità |
+| Livello | Linguaggio / Tecnologie | Ruolo |
 | :--- | :--- | :--- |
-| **Frontend** | **Python 3.11+**<br>PyQt6, Matplotlib, NetworkX, Requests | Interfaccia grafica utente, visualizzatore dinamico di step e grafi, pannello memoria Stack/Heap, configuratore ed esecutore di benchmark con boxplot e curve $O(N)$. |
-| **Middleware** | **Go 1.21+**<br>`net/http`, Goroutines, Channels, `sync` | Server HTTP REST locale, gestione del **Worker Pool concorrente** per accodamento ed esecuzione isolata dei task, monitoraggio e supervisione dei sottoprocessi C++. |
-| **Backend** | **C++20**<br>STL (`std::vector`, `std::list`, `std::chrono`), nlohmann/json | Esecuzione degli algoritmi, campionamento statistico multi-run con seed indipendenti, memory tracking di stack frame e blocchi heap, I/O JSON su standard stream. |
+| **Frontend** | Python 3.11+, PyQt6, Matplotlib, Requests | Interfaccia grafica, visualizzatore step-by-step, pannello memoria Stack/Heap, benchmark con boxplot e curva O(N). |
+| **Middleware** | Go 1.21+, `net/http`, Goroutines, Channels | Server HTTP REST locale, Worker Pool concorrente per l'esecuzione isolata dei task, supervisione dei sottoprocessi C++. |
+| **Backend** | C++20, STL, nlohmann/json | Esecuzione algoritmi, campionamento statistico multi-run, memory tracking di stack frame e blocchi heap, I/O JSON su stream standard. |
 
 ---
 
-## Gestione Dipendenze e Prerequisiti
+## Gestione delle Dipendenze
 
-Ciascun componente possiede il proprio sistema standard di gestione e installazione delle dipendenze:
-
-### 1. Python 
-Disponibili tre formati standard:
-- `frontend/requirements.txt`: installabile direttamente tramite `pip`.
-- `frontend/pyproject.toml`: compatibile con installer come ad esmepio `uv`o `pip`, `flit` o `build`.
-- `frontend/environment.yml`: per chi utilizza ambienti virtuali basati su `conda` / `mamba`.
-
-### 2. Go 
-- `middleware/go.mod`: definisce il modulo Go standard (`apl_middleware`). Utilizza esclusivamente la standard library (`net/http`, `os/exec`, `sync`, `encoding/json`).
-
-### 3. C++
-- Librerie di terze parti header-only incluse direttamente in `backend/include/` (`nlohmann/json.hpp`).
-- Sistema di build doppio:
-  - **CMake** (`backend/CMakeLists.txt`)
-  - **Makefile standalone cross-platform** (`backend/Makefile`) per compilazione diretta con `make` o `mingw32-make`.
-
----
-
-## Guida all'Avvio della piattaforma
-
-Per avviare la piattaforma, aprire tre terminali dedicati ai tre componenti.
-
-### 1. Compilare il Backend (C++)
-
-È possibile compilare sia tramite **Makefile** che tramite **CMake**.
-
-#### Opzione A: Tramite Makefile 
+### Python — `pip` + `requirements.txt`
 ```bash
-cd backend
-mingw32-make clean
-mingw32-make -j4
+cd frontend
+pip install -r requirements.txt
 ```
-L'eseguibile compilato verrà salvato in `backend/build/backend.exe`.
 
-#### Opzione B: Tramite CMake
+### Go — modulo standard `go.mod`
+Non è necessario installare nulla manualmente. Il modulo Go (`apl_middleware`) usa esclusivamente la standard library. Le dipendenze vengono risolte automaticamente da `go run` o `go build`.
+
+### C++ — CMake + header-only incluse
+Le librerie di terze parti (es. `nlohmann/json`) sono già incluse in `backend/include/` e non richiedono installazione separata. È sufficiente avere CMake e un compilatore C++20 (es. MinGW-w64 su Windows).
+
+---
+
+## Avvio della Piattaforma
+
+> ⚠️ L'applicazione richiede **tre terminali aperti in parallelo**, uno per ogni componente. Seguire l'ordine indicato.
+
+---
+
+### Terminale 1 — Compilare il Backend (C++)
+
+Aprire un primo terminale ed eseguire:
+
 ```bash
 cd backend
 cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
+L'eseguibile viene generato in `backend/build/backend.exe`.  
+**Questo terminale può essere chiuso al termine della compilazione.**
+
 ---
 
-### 2. Avviare il Middleware (Go)
+### Terminale 2 — Avviare il Middleware (Go)
 
-Il middleware coordina le richieste ed esegue `backend.exe`:
+Aprire un **secondo terminale** ed eseguire:
 
 ```bash
 cd middleware
 go run main.go -backend "..\backend\build\backend.exe"
 ```
-*In alternativa, è possibile compilare ed eseguire l'eseguibile binario:*
-```bash
-go build -o middleware.exe main.go
-.\middleware.exe -backend "..\backend\build\backend.exe"
-```
-Il server avvierà il Worker Pool e si metterà in ascolto su `http://localhost:8080`.
+
+Il server si avvierà e rimarrà in ascolto su `http://localhost:8080`. **Non chiudere questo terminale.**
 
 ---
 
-### 3. Avviare il Frontend (Python)
+### Terminale 3 — Avviare il Frontend (Python)
 
-#### Creazione e attivazione virtual environment 
+Aprire un **terzo terminale** ed eseguire:
+
 ```bash
 cd frontend
-python -m venv .venv
-
-# Su Windows (PowerShell):
-.venv\Scripts\Activate.ps1
-# Su Linux/macOS:
-# source .venv/bin/activate
-```
-
-#### Installazione dipendenze
-È possibile usare uno dei metodi supportati:
-
-- **Tramite pip:**
-  ```bash
-  pip install -r requirements.txt
-  ```
-- **Oppure tramite uv (se installato):**
-  ```bash
-  uv pip install -r requirements.txt
-  ```
-- **Oppure tramite Conda:**
-  ```bash
-  conda env create -f environment.yml
-  conda activate apl-frontend
-  ```
-
-#### Esecuzione dell'applicazione
-```bash
 python main.py
 ```
+
+Si aprirà la finestra dell'applicazione. **Non chiudere questo terminale.**
 
 ---
 
 ## Funzionalità dell'Applicazione
 
-### 1. Tab "Visualizzatore"
-- **Selezione da parte dell'utente dell'algoritmo**:
-  - *Ordinamento*: Bubble Sort, Insertion Sort, Selection Sort, Merge Sort, Quick Sort.
-  - *Ricerca*: Linear Search, Binary Search (con ordinamento automatico preventivo dell'array).
-  - *Grafi*: Algoritmo di Dijkstra per cammini minimi.
-- **Controllo da parte dell'utente sui dati**:
-  - Generazione array casuale con dimensione $N$.
-  - Inserimento manuale di valori separati da virgola.
-  - Generazione casuale con preview per impostare il target di ricerca (utile per gli algoritmi di ricerca).
-- **Player**:
-  - Pulsanti Play / Pausa, Step Precedente, Step Successivo.
-  - Slider di regolazione velocità di playback (millisecondi per frame).
-  - Conteggio e visualizzazione delle metriche intrinseche indipendenti dall'hardware (**Confronti** e **Swap**).
-- **Rappresentazione della Memoria (Stack & Heap)**:
-  - **Stack View**: Traccia i frame attivi di funzione, evidenziando i parametri correnti e la profondità di ricorsione (es. chiamate ricorsive di MergeSort e QuickSort).
-  - **Heap View**: Visualizza le allocazioni dinamiche temporanee (es. i buffer `merge_buffer_L` e `merge_buffer_R` istanziati durante il merge).
+### Tab "Visualizzatore"
 
-### 2. Tab "Benchmark"
-- **Strutture Dati a Confronto**:
-  - **Heap Array**: Array contiguo allocato esplicitamente sull'Heap tramite raw pointer. 
-  - **Linked List**: Doubly linked list standard C++. 
-  - *Regola di compatibilità*: per algoritmi come Binary Search (che richiede accesso indicizzato $O(1)$) e Dijkstra (grafo), l'opzione Linked List viene automaticamente disabilitata.
-- **Distribuzioni dell'Input**:
-  - `random` (dati casuali non correlati)
-  - `sorted` (caso migliore/peggiore in base all'algoritmo)
-  - `reversed` (ordinamento inverso)
-  - `nearly_sorted` (ordinato con il 5% di scambi casuali)
-- **Modalità di Analisi**:
-  - **Boxplot (Singolo N)**: Esegue $M$ run indipendenti (default 30) a parità di dimensione $N$. Calcola Min, Max, Media, Mediana, Q1 (25° percentile), Q3 (75° percentile), Deviazione Standard e genera un Boxplot comparativo con storico cumulabile.
-  - **Curva O(N)**: Esegue misurazioni incrementali al variare di $N$ tracciando empiricamente la curva di complessità temporale asintotica dell'algoritmo.
+Questa schermata permette di eseguire un algoritmo e osservarne l'andamento passo dopo passo in modo animato.
+
+**Algoritmi disponibili:**
+- *Ordinamento*: Bubble Sort, Insertion Sort, Selection Sort, Merge Sort, Quick Sort.
+- *Ricerca*: Linear Search, Binary Search (con ordinamento automatico preventivo dell'array).
+- *Grafi*: Algoritmo di Dijkstra per cammini minimi.
+
+**Cosa si trova l'utente davanti:**
+- Un **menu a tendina** per selezionare l'algoritmo tra quelli elencati sopra.
+- Un campo per impostare la **dimensione N** dell'array e un pulsante per generarlo casualmente, oppure un campo per **inserire manualmente** i valori separati da virgola.
+- Per gli algoritmi di ricerca, un campo aggiuntivo per specificare il **valore target** da cercare.
+
+**Flusso di utilizzo:**
+1. Scegliere l'algoritmo dal menu.
+2. Inserire o generare l'array di input.
+3. Cliccare **"Avvia Visualizzazione"**.
+4. Usare i pulsanti **Play / Pausa** e lo **slider della velocità** per controllare l'animazione.
+5. Osservare il grafico a barre aggiornarsi ad ogni step, con gli elementi attivi evidenziati e i contatori di **Confronti** e **Swap** aggiornati in tempo reale.
+6. In basso, le sezioni **Stack** e **Heap** mostrano come la memoria viene occupata e liberata durante l'esecuzione (particolarmente visibile in algoritmi ricorsivi come MergeSort e QuickSort).
+
+---
+
+### Tab "Benchmark"
+
+Questa schermata permette di misurare e confrontare le prestazioni degli algoritmi in modo statisticamente rigoroso.
+
+**Strutture Dati a Confronto:**
+- **Heap Array**: Array contiguo allocato esplicitamente sull'Heap tramite raw pointer.
+- **Linked List**: Doubly linked list standard C++.
+- *Regola di compatibilità*: per algoritmi come Binary Search (che richiede accesso indicizzato O(1)) e Dijkstra (grafo), l'opzione Linked List viene automaticamente disabilitata.
+
+**Distribuzioni dell'Input:**
+- `random` — dati casuali non correlati.
+- `sorted` — caso migliore/peggiore in base all'algoritmo.
+- `reversed` — ordinamento inverso.
+- `nearly_sorted` — ordinato con il 5% di scambi casuali.
+
+**Modalità di Analisi:**
+- **Boxplot (Singolo N)**: Esegue M run indipendenti (default 30) a parità di dimensione N. Calcola Min, Max, Media, Mediana, Q1 (25° percentile), Q3 (75° percentile), Deviazione Standard e genera un Boxplot comparativo con storico cumulabile.
+- **Curva O(N)**: Esegue misurazioni incrementali al variare di N tracciando empiricamente la curva di complessità temporale asintotica dell'algoritmo.
+
+**Cosa si trova l'utente davanti:**
+- Un **menu a tendina** per selezionare l'algoritmo da analizzare.
+- Controlli per impostare il **numero di run** (default: 30), la **distribuzione dell'input** e la **struttura dati** su cui operare.
+- Due modalità di analisi selezionabili: **Boxplot** (singolo N) e **Curva O(N)**.
+
+**Flusso di utilizzo — Boxplot:**
+1. Selezionare l'algoritmo e impostare N e il numero di run.
+2. Scegliere la distribuzione e la struttura dati.
+3. Cliccare **"Avvia Benchmark"**.
+4. Al termine, viene mostrato un **boxplot** con la distribuzione dei tempi di esecuzione sui run effettuati, affiancato da una tabella con Min, Max, Media, Mediana, Q1, Q3 e Deviazione Standard.
+
+**Flusso di utilizzo — Curva O(N):**
+1. Selezionare l'algoritmo e impostare l'intervallo di N (da, a, passo).
+2. Cliccare **"Avvia Curva"**.
+3. Al termine, viene tracciato un grafico che mostra empiricamente come il tempo di esecuzione cresce al crescere di N, permettendo di verificare visivamente la complessità asintotica dell'algoritmo.
+
