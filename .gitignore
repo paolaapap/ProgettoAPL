@@ -1,10 +1,11 @@
 .vscode/
 backend/build/
-__pycache__/
+**/__pycache__/
 *.pyc
 *.exe
 *.png
 .DS_Store
+.venv/
 chat.md
 chat.html
 chat.pdf
