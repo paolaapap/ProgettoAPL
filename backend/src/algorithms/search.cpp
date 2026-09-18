@@ -113,3 +113,18 @@ int binarySearchBench(const int* arr, int n, int target) {
     }
     return -1;
 }
+
+// -----------------------------------------------------------------------
+// Linear Search su lista — O(n)
+// Scansione sequenziale tramite iteratore. È l'unico algoritmo di ricerca
+// compatibile con linked list: non richiede accesso per indice O(1).
+// -----------------------------------------------------------------------
+int linearSearchBenchList(const std::list<int>& lst, int target) {
+    int idx = 0;
+    for (const int& val : lst) {
+        if (val == target) return idx;
+        ++idx;
+    }
+    return -1;
+}
+

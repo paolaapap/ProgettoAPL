@@ -51,4 +51,3 @@ void insertionSortBenchList(std::list<int> &lst);
 void selectionSortBenchList(std::list<int> &lst);
 void mergeSortBenchList(std::list<int> &lst);
 void quickSortBenchList(std::list<int> &lst);
-int  linearSearchBenchList(const std::list<int> &lst, int target);

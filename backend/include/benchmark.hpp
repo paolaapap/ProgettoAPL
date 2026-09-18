@@ -32,6 +32,12 @@ struct BenchmarkResult {
 // per condividere la logica di timing e calcolo statistiche.
 // -----------------------------------------------------------------------
 
+/* La classe Benchmarker separa:
+    - logica di timinig (uguale per tutti)
+    - costruzione dei dati (array o lista)
+    - esecuzione dell'algoritmo (diversa per ogni algoritmo)
+
+*/
 class Benchmarker {
 public:
     Benchmarker() = default;

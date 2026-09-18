@@ -6,10 +6,15 @@
 
 using json = nlohmann::json;
 
-// -----------------------------------------------------------------------
-// Conversioni to_json per le struct del progetto (ADL pattern)
-// Ogni funzione produce JSON con chiavi identiche al contratto middleware Go
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------
+// SERIALIZZATORE nlohmann::json
+// Conversioni to_json per le struct del nostro progetto 
+// 
+// struct del nostro progetto: [MemFrame, HeapBlock, MemorySnapshot, StepEvent, BenchmarkResult]
+// in questo modo abbiamo una serializzazione automatica ma personalizzata (in base alla struct) 
+//
+// Ogni funzione produce JSON con chiavi coerenti al contratto del middleware Go
+// --------------------------------------------------------------------------------------------
 
 // MemFrame → {"name": "...", "vars": {"k": "v", ...}}
 inline void to_json(json& j, const MemFrame& f) {

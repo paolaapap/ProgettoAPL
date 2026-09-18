@@ -15,9 +15,6 @@
 #include "json_utils.hpp"
 #include "memory_tracer.hpp"
 
-// ============================================================
-// Dispatch algoritmo
-// ============================================================
 
 struct AlgorithmInfo {
   std::string time_complexity;
@@ -35,18 +32,42 @@ static AlgorithmInfo getInfo(const std::string &algo) {
       {"binary_search", {"O(log n)", "O(1)"}},
       {"dijkstra", {"O(V^2)", "O(V)"}},
   };
-  auto it = info.find(algo);
+  auto it = info.find(algo); 
   if (it != info.end())
-    return it->second;
+    return it->second; 
   return {"O(?)", "O(?)"};
 }
 
-// ============================================================
-// Main — legge JSON da stdin, scrive JSON su stdout
-// ============================================================
+/**
+ * ============================================================================
+ *  MAIN
+ * ============================================================================
+ * 
+ * - Riceve una richiesta JSON da stdin
+ * - Esegue l'operazione richiesta
+ * - Restituisce la risposta (o eventuali errori) in formato JSON su stdout
+ * 
+ * Supporta tre modalità di esecuzione:
+ * 
+ * 1. "steps" (default):
+ *    Esegue l'algoritmo tracciando ogni singolo passaggio (StepCallback) e
+ *    l'uso della memoria stack e heap (MemoryTracer)
+ * 
+ * 2. "benchmark":
+ *    Misura i tempi effettivi di esecuzione dell'algoritmo su una dimensione
+ *    fissata 'n' per un dato numero di iterazioni ('runs'). Permette di 
+ *    confrontare le prestazioni tra algoritmi diversi e strutture dati diverse
+ *    (array heap e linked list)
+ * 
+ * 3. "benchmark_curve":
+ *    Esegue benchmark progressivi al variare di 'n' (da start_n a end_n con 
+ *    passo step_n). Raccoglie i campioni necessari per tracciare grafici 
+ *    di complessità computazionale 
+ * ============================================================================
+ */
 
 int main() {
-  // Leggi tutto stdin (il middleware chiude il pipe dopo aver inviato il JSON)
+  // Legge tutto stdin finche il middleware chiude il pipe dopo aver inviato il JSON
   std::string input((std::istreambuf_iterator<char>(std::cin)),
                     std::istreambuf_iterator<char>());
 
@@ -65,7 +86,7 @@ int main() {
     if (algo.empty()) {
       std::cout << json{{"status", "error"},
                         {"message", "campo 'algorithm' mancante"}}
-                       .dump()
+                       .dump() // produce JSON su una sola riga senza identazione, go legge tutto stdout come un blocco unico e non riga x riga
                 << "\n";
       return 1;
     }
@@ -113,7 +134,7 @@ int main() {
         return 1;
       }
 
-      // Serializza risposta
+      // RISPOSTA A GO
       auto info = getInfo(algo);
       json response = {
           {"status", "ok"},
@@ -253,7 +274,7 @@ int main() {
             algo == "quick_sort" || algo == "linear_search" ||
             algo == "binary_search" || algo == "dijkstra") {
           results.push_back(bm.run(algo, makeAlgoFn(algo), curr_n, runs,
-                                   dataDist));  // rimosso dataStruct
+                                   dataDist));  
         } else {
 
           std::cout << json{{"status", "error"},
