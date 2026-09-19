@@ -22,6 +22,26 @@ struct StepEvent {
 using StepCallback = std::function<void(const StepEvent &)>;
 
 // -----------------------------------------------------------------------
+// emitStep — helper condiviso: costruisce uno StepEvent e lo passa alla cb
+// Inline nell'header perché usato da più translation unit (sorting, search)
+// -----------------------------------------------------------------------
+inline void emitStep(int &stepCount, int &comparisons, int &swaps,
+                     const std::vector<int> &arr,
+                     const std::vector<int> &highlight,
+                     MemoryTracer &mem,
+                     const StepCallback &cb) {
+    StepEvent ev;
+    ev.step        = stepCount++;
+    ev.array       = arr;
+    ev.highlight   = highlight;
+    ev.comparisons = comparisons;
+    ev.swaps       = swaps;
+    ev.memory      = mem.snapshot();
+    cb(ev);
+}
+
+
+// -----------------------------------------------------------------------
 // Dichiarazioni degli algoritmi di ordinamento
 // Ogni funzione modifica arr sul posto e invoca cb ad ogni step significativo
 // -----------------------------------------------------------------------

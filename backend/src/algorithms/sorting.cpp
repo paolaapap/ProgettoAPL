@@ -2,24 +2,7 @@
 #include <string>
 #include <algorithm>
 
-// -----------------------------------------------------------------------
-// Helper: costruisce un StepEvent e lo passa alla callback
-// -----------------------------------------------------------------------
 
-static void emitStep(int& stepCount, int& comparisons, int& swaps,
-                     const std::vector<int>& arr,
-                     const std::vector<int>& highlight,
-                     MemoryTracer& mem,
-                     const StepCallback& cb) {
-    StepEvent ev;
-    ev.step        = stepCount++;
-    ev.array       = arr;
-    ev.highlight   = highlight;
-    ev.comparisons = comparisons;
-    ev.swaps       = swaps;
-    ev.memory      = mem.snapshot();
-    cb(ev);
-}
 
 // -----------------------------------------------------------------------
 // Bubble Sort  — O(n^2) tempo, O(1) spazio aggiuntivo

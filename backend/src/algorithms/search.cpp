@@ -1,84 +1,65 @@
 #include "algorithms/search.hpp"
-#include "algorithms/sorting.hpp"
+#include "algorithms/sorting.hpp"  // inclusa per stepEvent, stepCallback, emitStep
 #include <string>
 
-// -----------------------------------------------------------------------
-// Helper locale (reusa emitStep di sorting.cpp ma lho ridefinita qui)
-// -----------------------------------------------------------------------
 
-static void emitSearchStep(int& stepCount, int& comparisons,
-                            const std::vector<int>& arr,
-                            const std::vector<int>& highlight,
-                            MemoryTracer& mem, const StepCallback& cb) {
-    StepEvent ev;
-    ev.step        = stepCount++;
-    ev.array       = arr;
-    ev.highlight   = highlight;
-    ev.comparisons = comparisons;
-    ev.swaps       = 0;
-    ev.memory      = mem.snapshot();
-    cb(ev);
-}
-
-// -----------------------------------------------------------------------
-// Linear Search — O(n)
-// -----------------------------------------------------------------------
-
+// LINEAR SEARCH
 int linearSearch(const std::vector<int>& arr, int target,
                  MemoryTracer& mem, StepCallback cb) {
     int n = static_cast<int>(arr.size());
-    int step = 0, cmp = 0;
+    int step = 0, cmp = 0, swaps = 0;  // swaps sempre 0 perchè le ricerche non fanno swap
 
-    mem.pushFrame("linearSearch", {{"n", std::to_string(n)},
-                                    {"target", std::to_string(target)},
-                                    {"i", "0"}});
-    emitSearchStep(step, cmp, arr, {}, mem, cb);
+    mem.pushFrame("linearSearch", {{"n",      std::to_string(n)},
+                                   {"target", std::to_string(target)},
+                                   {"i",      "0"}});
+    emitStep(step, cmp, swaps, arr, {}, mem, cb);  // stato iniziale
 
     for (int i = 0; i < n; ++i) {
         ++cmp;
-        mem.updateFrame({{"i", std::to_string(i)},
-                          {"arr[i]", std::to_string(arr[i])}});
-        emitSearchStep(step, cmp, arr, {i}, mem, cb);
+        mem.updateFrame({{"i",      std::to_string(i)},
+                         {"arr[i]", std::to_string(arr[i])}});
+        emitStep(step, cmp, swaps, arr, {i}, mem, cb);  // elemento esaminato
 
         if (arr[i] == target) {
-            emitSearchStep(step, cmp, arr, {i}, mem, cb); // trovato
+            // step duplicato quando si trova l'elemento 
+            // serve al frontend per mantenere l'highlight dell'elemento trovato 
+            // per almeno un frame prima di terminare l'animazione
+            emitStep(step, cmp, swaps, arr, {i}, mem, cb);  // trovato
             mem.popFrame();
             return i;
         }
     }
-    emitSearchStep(step, cmp, arr, {}, mem, cb); // non trovato
+    emitStep(step, cmp, swaps, arr, {}, mem, cb);  // non trovato, highlight vuoto
     mem.popFrame();
     return -1;
 }
 
-// -----------------------------------------------------------------------
-// Binary Search — O(log n) — arr deve essere ordinato
-// -----------------------------------------------------------------------
 
+// BINARY SEARCH SU ARRAY ORDINATO (ordinato dal main.cpp)
 int binarySearch(const std::vector<int>& arr, int target,
                  MemoryTracer& mem, StepCallback cb) {
     int n   = static_cast<int>(arr.size());
     int lo  = 0;
     int hi  = n - 1;
-    int step = 0, cmp = 0;
+    int step = 0, cmp = 0, swaps = 0; // swaps sempre 0 perchè le ricerche non fanno swap
 
-    mem.pushFrame("binarySearch", {{"n", std::to_string(n)},
-                                    {"target", std::to_string(target)},
-                                    {"lo", "0"},
-                                    {"hi", std::to_string(hi)}});
-    emitSearchStep(step, cmp, arr, {}, mem, cb);
+    mem.pushFrame("binarySearch", {{"n",      std::to_string(n)},
+                                   {"target", std::to_string(target)},
+                                   {"lo",     "0"},
+                                   {"hi",     std::to_string(hi)}});
+    emitStep(step, cmp, swaps, arr, {}, mem, cb);  // stato iniziale
 
     while (lo <= hi) {
-        int mid = lo + (hi - lo) / 2;
+        int mid = lo + (hi - lo) / 2;  
         ++cmp;
-        mem.updateFrame({{"lo", std::to_string(lo)},
-                          {"hi", std::to_string(hi)},
-                          {"mid", std::to_string(mid)},
-                          {"arr[mid]", std::to_string(arr[mid])}});
-        emitSearchStep(step, cmp, arr, {lo, mid, hi}, mem, cb);
+        mem.updateFrame({{"lo",      std::to_string(lo)},
+                         {"hi",      std::to_string(hi)},
+                         {"mid",     std::to_string(mid)},
+                         {"arr[mid]",std::to_string(arr[mid])}});
+        emitStep(step, cmp, swaps, arr, {lo, mid, hi}, mem, cb);  // intervallo corrente
 
         if (arr[mid] == target) {
-            emitSearchStep(step, cmp, arr, {mid}, mem, cb);
+            emitStep(step, cmp, swaps, arr, {mid}, mem, cb);  // trovato
             mem.popFrame();
             return mid;
         } else if (arr[mid] < target) {
@@ -87,15 +68,15 @@ int binarySearch(const std::vector<int>& arr, int target,
             hi = mid - 1;
         }
     }
-    emitSearchStep(step, cmp, arr, {}, mem, cb); 
+    emitStep(step, cmp, swaps, arr, {}, mem, cb);  // non trovato
     mem.popFrame();
     return -1;
 }
 
-// =======================================================================
-// VERSIONI PURE PER BENCHMARK 
-// =======================================================================
 
+
+// VERSIONI PURE PER BENCHMARK 
+// su heap array
 int linearSearchBench(const int* arr, int n, int target) {
     for (int i = 0; i < n; ++i) {
         if (arr[i] == target) return i;
@@ -114,13 +95,10 @@ int binarySearchBench(const int* arr, int n, int target) {
     return -1;
 }
 
-// -----------------------------------------------------------------------
-// Linear Search su lista — O(n)
-// Scansione sequenziale tramite iteratore. È l'unico algoritmo di ricerca
-// compatibile con linked list: non richiede accesso per indice O(1).
-// -----------------------------------------------------------------------
+// su lista
 int linearSearchBenchList(const std::list<int>& lst, int target) {
     int idx = 0;
+    // range based for loop per rif costante
     for (const int& val : lst) {
         if (val == target) return idx;
         ++idx;
