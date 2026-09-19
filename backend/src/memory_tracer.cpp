@@ -17,16 +17,16 @@ void MemoryTracer::popFrame() {
 
 void MemoryTracer::updateFrame(const std::map<std::string, std::string> &vars) {
   if (!stack_.empty()) {
-    // Aggiorna (merge) le variabili del frame corrente (top)
     for (const auto &[key, val] : vars) {
-      stack_.back().vars[key] = val;
+      stack_.back().vars[key] = val; // .back() restituisce un rif all'ultimo elemento del vettore
     }
   }
 }
 
 void MemoryTracer::heapAlloc(const std::string &label, int size,
                              const std::string &content) {
-  // Rimuovi eventuale blocco precedente con stesso label, riallochiamo
+  // Rimuove un eventuale blocco precedente con stessa label
+  // per non creare blocchi duplicati nel caso in cui venisse chiamata due volte con stessa label
   heap_.erase(
       std::remove_if(heap_.begin(), heap_.end(),
                      [&label](const HeapBlock &b) { return b.label == label; }),
