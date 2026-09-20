@@ -146,10 +146,8 @@ int main() {
 
     // ---- MODE: benchmark ----
     else if (mode == "benchmark") {
-      if (n <= 0)
-        n = static_cast<int>(data.size());
-      if (n <= 0)
-        n = 100;
+      if (n <= 0) n = static_cast<int>(data.size());
+      if (n <= 0) n = 100;
 
       std::string dataDist =
           input_json.value("data_distribution", std::string{"random"});
@@ -159,56 +157,45 @@ int main() {
       Benchmarker bm;
       BenchmarkResult result;
 
-      // Versioni su array heap (int*, new/delete)
-      auto makeArrayFn =
-          [&](const std::string &a) -> std::function<void(int *, int)> {
-        return [a](int *arr, int sz) {
-          if (a == "bubble_sort")         bubbleSortBench(arr, sz);
-          else if (a == "insertion_sort") insertionSortBench(arr, sz);
-          else if (a == "selection_sort") selectionSortBench(arr, sz);
-          else if (a == "merge_sort")     mergeSortBench(arr, sz);
-          else if (a == "quick_sort")     quickSortBench(arr, sz);
-          else if (a == "linear_search")  linearSearchBench(arr, sz, arr[0]);
-          else if (a == "binary_search") {
-            std::sort(arr, arr + sz);
-            binarySearchBench(arr, sz, arr[sz / 2]);
-          } else if (a == "dijkstra") {
-            int nodes = static_cast<int>(std::sqrt(sz));
-            if (nodes * nodes == sz)
-              dijkstraBench(arr, nodes, 0);
-          }
-        };
-      };
-
-      // Versioni su linked list (std::list<int>)
-      // binary_search e dijkstra NON sono supportati su lista
-      auto makeListFn =
-          [&](const std::string &a) -> std::function<void(std::list<int> &)> {
-        return [a](std::list<int> &lst) {
-          if (a == "bubble_sort")         bubbleSortBenchList(lst);
-          else if (a == "insertion_sort") insertionSortBenchList(lst);
-          else if (a == "selection_sort") selectionSortBenchList(lst);
-          else if (a == "merge_sort")     mergeSortBenchList(lst);
-          else if (a == "quick_sort")     quickSortBenchList(lst);
-          else if (a == "linear_search")  linearSearchBenchList(lst, lst.front());
-        };
-      };
-
-      bool isValidAlgo = (algo == "bubble_sort" || algo == "insertion_sort" ||
-                          algo == "selection_sort" || algo == "merge_sort" ||
-                          algo == "quick_sort" || algo == "linear_search" ||
-                          algo == "binary_search" || algo == "dijkstra");
-
-      if (!isValidAlgo) {
+      // Dispatch su array heap (int*, new/delete)
+      std::function<void(int*, int)> arrayFn;
+      if      (algo == "bubble_sort")    arrayFn = bubbleSortBench;
+      else if (algo == "insertion_sort") arrayFn = insertionSortBench;
+      else if (algo == "selection_sort") arrayFn = selectionSortBench;
+      else if (algo == "merge_sort")     arrayFn = mergeSortBench;
+      else if (algo == "quick_sort")     arrayFn = quickSortBench;
+      else if (algo == "linear_search")
+          arrayFn = [](int* arr, int sz) { linearSearchBench(arr, sz, arr[0]); };
+      else if (algo == "binary_search")
+          arrayFn = [](int* arr, int sz) {
+              std::sort(arr, arr + sz);
+              binarySearchBench(arr, sz, arr[sz / 2]);
+          };
+      else if (algo == "dijkstra")
+          arrayFn = [](int* arr, int sz) {
+              int nodes = static_cast<int>(std::sqrt(sz));
+              if (nodes * nodes == sz) dijkstraBench(arr, nodes, 0);
+          };
+      else {
         std::cout << json{{"status", "error"},
-                          {"message", "algoritmo non riconosciuto"}}
+                          {"message", "algoritmo non riconosciuto: " + algo}}
                          .dump()
                   << "\n";
         return 1;
       }
 
+      // Dispatch su linked list (std::list<int>)
+      // binary_search e dijkstra NON supportati su lista
+      std::function<void(std::list<int>&)> listFn;
+      if      (algo == "bubble_sort")    listFn = bubbleSortBenchList;
+      else if (algo == "insertion_sort") listFn = insertionSortBenchList;
+      else if (algo == "selection_sort") listFn = selectionSortBenchList;
+      else if (algo == "merge_sort")     listFn = mergeSortBenchList;
+      else if (algo == "quick_sort")     listFn = quickSortBenchList;
+      else if (algo == "linear_search")
+          listFn = [](std::list<int>& lst) { linearSearchBenchList(lst, lst.front()); };
+
       if (dataStruct == "linked_list") {
-        // binary_search e dijkstra non compatibili con linked list
         if (algo == "binary_search" || algo == "dijkstra") {
           std::cout << json{{"status", "error"},
                             {"message", algo + " non è compatibile con linked_list"}}
@@ -216,16 +203,16 @@ int main() {
                     << "\n";
           return 1;
         }
-        result = bm.runList(algo, makeListFn(algo), n, runs, dataDist);
+        result = bm.runList(algo, listFn, n, runs, dataDist);
       } else {
-        // heap (default): array allocato con new/delete
-        result = bm.run(algo, makeArrayFn(algo), n, runs, dataDist);
+        result = bm.run(algo, arrayFn, n, runs, dataDist);
       }
 
       json response = result;
       response["status"] = "ok";
       std::cout << response.dump() << "\n";
     }
+
 
 
     // ---- MODE: benchmark_curve ----
@@ -242,48 +229,37 @@ int main() {
       Benchmarker bm;
       std::vector<BenchmarkResult> results;
 
-      auto makeAlgoFn =
-          [&](const std::string &a) -> std::function<void(int *, int)> {
-        return [a](int *arr, int sz) {
-          if (a == "bubble_sort")
-            bubbleSortBench(arr, sz);
-          else if (a == "insertion_sort")
-            insertionSortBench(arr, sz);
-          else if (a == "selection_sort")
-            selectionSortBench(arr, sz);
-          else if (a == "merge_sort")
-            mergeSortBench(arr, sz);
-          else if (a == "quick_sort")
-            quickSortBench(arr, sz);
-          else if (a == "linear_search")
-            linearSearchBench(arr, sz, arr[0]);
-          else if (a == "binary_search") {
-            std::sort(arr, arr + sz);
-            binarySearchBench(arr, sz, arr[sz / 2]);
-          } else if (a == "dijkstra") {
-            int nodes = static_cast<int>(std::sqrt(sz));
-            if (nodes * nodes == sz)
-              dijkstraBench(arr, nodes, 0);
-          }
-        };
-      };
+      // Dispatch 
+      std::function<void(int*, int)> arrayFn;
+      if      (algo == "bubble_sort")    arrayFn = bubbleSortBench;
+      else if (algo == "insertion_sort") arrayFn = insertionSortBench;
+      else if (algo == "selection_sort") arrayFn = selectionSortBench;
+      else if (algo == "merge_sort")     arrayFn = mergeSortBench;
+      else if (algo == "quick_sort")     arrayFn = quickSortBench;
+      else if (algo == "linear_search")
+          arrayFn = [](int* arr, int sz) { linearSearchBench(arr, sz, arr[0]); };
+      else if (algo == "binary_search")
+          arrayFn = [](int* arr, int sz) {
+              std::sort(arr, arr + sz);
+              binarySearchBench(arr, sz, arr[sz / 2]);
+          };
+      else if (algo == "dijkstra")
+          arrayFn = [](int* arr, int sz) {
+              int nodes = static_cast<int>(std::sqrt(sz));
+              if (nodes * nodes == sz) dijkstraBench(arr, nodes, 0);
+          };
+      else {
+        std::cout << json{{"status", "error"},
+                          {"message", "algoritmo non riconosciuto: " + algo}}
+                         .dump()
+                  << "\n";
+        return 1;
+      }
 
       for (int curr_n = start_n; curr_n <= end_n; curr_n += step_n) {
-        if (algo == "bubble_sort" || algo == "insertion_sort" ||
-            algo == "selection_sort" || algo == "merge_sort" ||
-            algo == "quick_sort" || algo == "linear_search" ||
-            algo == "binary_search" || algo == "dijkstra") {
-          results.push_back(bm.run(algo, makeAlgoFn(algo), curr_n, runs,
-                                   dataDist));  
-        } else {
-
-          std::cout << json{{"status", "error"},
-                            {"message", "algoritmo non riconosciuto"}}
-                           .dump()
-                    << "\n";
-          return 1;
-        }
+        results.push_back(bm.run(algo, arrayFn, curr_n, runs, dataDist));
       }
+
 
       json response = {{"status", "ok"}, {"curve", json::array()}};
       for (const auto &r : results) {
