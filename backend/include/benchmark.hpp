@@ -69,7 +69,6 @@ private:
                                           const std::string& distType);
 
     // Helpers per il calcolo statistico
-    static double calcMedian(std::vector<double> vals);
     static double calcQuantile(const std::vector<double>& sorted, double q);
     static double calcStdDev(const std::vector<double>& vals, double mean);
 
