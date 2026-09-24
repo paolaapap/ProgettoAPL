@@ -90,7 +90,7 @@ class Visualizer(QWidget):
 
     def _init_plot(self) -> None:
         self.ax = self.figure.add_subplot(111)
-        self.ax.set_axis_off()  # Rimuove assi e griglia all'inizio
+        self.ax.set_axis_off()  
         self.canvas.draw()
 
     # ------------------------------------------------------------------
@@ -100,7 +100,7 @@ class Visualizer(QWidget):
     @pyqtSlot(object, str, list)
     def load_steps(self, result: object, algo: str, data: list[int]) -> None:
         """Carica una nuova lista di step e resetta la visualizzazione."""
-        from models.types import AlgoResult # import locale per type hint
+        from models.types import AlgoResult 
         if not hasattr(result, "steps"):
             return
             
@@ -122,7 +122,6 @@ class Visualizer(QWidget):
                     w = data[i * n + j]
                     if w > 0:
                         self._nx_graph.add_edge(i, j, weight=w)
-            # Layout fisso 
             self._pos = nx.spring_layout(self._nx_graph, seed=42)
             
         self._current_idx = 0
@@ -202,7 +201,7 @@ class Visualizer(QWidget):
                 edge_labels=edge_labels, 
                 ax=self.ax, 
                 font_size=8,
-                label_pos=0.3, # Sposta il peso verso il nodo sorgente per evitare accavallamenti
+                label_pos=0.3, 
                 bbox=dict(facecolor="white", edgecolor="none", alpha=0.8, pad=0.5)
             )
             
@@ -222,7 +221,7 @@ class Visualizer(QWidget):
                     height = bar.get_height()
                     self.ax.annotate(f'{height}',
                                      xy=(bar.get_x() + bar.get_width() / 2, height),
-                                     xytext=(0, 3),  # 3 points vertical offset
+                                     xytext=(0, 3),  
                                      textcoords="offset points",
                                      ha='center', va='bottom', fontsize=8)
 

@@ -196,7 +196,7 @@ class AlgoPanel(QWidget):
         self._last_algo = algo
         self._last_data = data
 
-        # Esegui in un thread separato per non bloccare la UI
+        # Esegue in un thread separato per non bloccare la UI
         self._worker = _WorkerThread(self.client, algo, data, target)
         self._worker.finished.connect(self._on_result)
         self._worker.error.connect(self._on_error)

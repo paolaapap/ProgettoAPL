@@ -14,9 +14,9 @@ def main() -> None:
 
     # Avvio applicazione PyQt
     app = QApplication(sys.argv)
-    app.setStyle("Fusion") # Stile pulito cross-platform
+    app.setStyle("Fusion") 
     
-    # Imposta l'icona se presente
+    # Imposta l'icona 
     icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
     if os.path.exists(icon_path):
         app.setWindowIcon(QIcon(icon_path))

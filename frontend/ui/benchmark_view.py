@@ -183,11 +183,8 @@ class BenchmarkView(QWidget):
         algo = self.algo_combo.currentData()
         incompatible = algo in ("binary_search", "dijkstra")
 
-        # Trova l'indice della voce "linked_list" nel combo
         for i in range(self.struct_combo.count()):
             if self.struct_combo.itemText(i) == "linked_list":
-                # PyQt6 non supporta setItemEnabled direttamente su QComboBox standard;
-                # usiamo il model per disabilitare la voce
                 from PyQt6.QtGui import QStandardItemModel
                 model = self.struct_combo.model()
                 if isinstance(model, QStandardItemModel):

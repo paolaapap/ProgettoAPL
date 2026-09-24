@@ -13,7 +13,6 @@ import (
 )
 
 // BackendPath è il percorso dell'eseguibile C++
-// Viene impostato all'avvio del server (vedi main.go)
 var BackendPath = "backend.exe"
 
 // RunCpp esegue il backend C++ con la richiesta data e ritorna la risposta grezza (JSON)
