@@ -108,7 +108,7 @@ Questa schermata permette di eseguire un algoritmo e osservarne l'andamento pass
 Questa schermata permette di misurare e confrontare le prestazioni degli algoritmi in modo statisticamente rigoroso.
 
 **Strutture Dati a Confronto:**
-- **Heap Array**: Array contiguo allocato esplicitamente sull'Heap tramite raw pointer.
+- **Heap Array**: Array allocato esull'Heap.
 - **Linked List**: Doubly linked list standard C++.
 - *Regola di compatibilità*: per algoritmi come Binary Search (che richiede accesso indicizzato O(1)) e Dijkstra (grafo), l'opzione Linked List viene automaticamente disabilitata.
 
